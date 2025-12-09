@@ -1,2 +1,3 @@
-testing compiler: clang
+testing compiler: gcc
 testing compiler flags: -O2 -g
+testing provider: gcc

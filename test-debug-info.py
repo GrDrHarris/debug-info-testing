@@ -1,7 +1,7 @@
 #!/bin/python3
 
 import os, sys
-import imp
+#import imp
 import importlib.util
 import shutil
 import random
@@ -324,12 +324,13 @@ def instrument_and_test(cfile, newfile, reach_lines, stop_lines):
 
 
 
-
-def test_gdb():
-    cfile = "cc.c"
+def test_gdb(provider):
+    #cfile = "cc.c"
     inst_file = "cc_inst.c"
     while True:
-        gencsmith.gencsmith(cfile) 
+        cfile = provider()
+        if cfile == None:
+            return
         print("Seed Program Generation: Working on a new valid C file")
         if prepare_gcc_coverage(cfile) != 0:
             continue
@@ -340,8 +341,32 @@ def test_gdb():
         #print(stoppable_lines)
         instrument_and_test(cfile, inst_file, reach_lines, stoppable_lines)
 
+def csmith_provider():
+    cfile = "cc.c"
+    gencsmith.gencsmith(cfile) 
+    return cfile
+
+def clang_provider():
+    print("clang is not ready!")
+    exit(1)
+
+def rose_provider():
+    print("rose is not ready!")
+    exit(1)
+
+def gcc_provider():
+    print("gcc is not ready!")
+    exit(1)
+
+providers = {
+    "csmith": csmith_provider,
+    "clang": clang_provider,
+    "rose": rose_provider,
+    "gcc": gcc_provider
+}
 
 if __name__ == "__main__":
+    provider = csmith_provider
     with open("config.txt", "r") as config_f:
         for line in config_f:
             if "testing compiler:" in line:
@@ -353,5 +378,12 @@ if __name__ == "__main__":
             if "testing compiler flags:" in line:
                 dexter_compiler_flags = line.split(": ")[-1].strip()
                 print("compiler flags used to verify O0 is:", dexter_compiler_flags)
-
-    test_gdb()
+            if "testing provider:" in line:
+                provider_flags = line.split(": ")[-1].strip()
+                print("provider flags is:", provider_flags)
+                p = providers.get(provider_flags)
+                if p == None:
+                    print(f"invalid provider flag: {provider_flags}, valid values are: {providers.keys()}")
+                    exit(1)
+                provider = p 
+    test_gdb(provider)

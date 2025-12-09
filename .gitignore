@@ -1,1 +1,9 @@
-**/__pycache__
+*
+!bugs/
+!dexter
+!.gitignore
+!b.c
+!config.sh
+!config.txt
+!*.py
+!README.md
